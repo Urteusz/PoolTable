@@ -8,13 +8,44 @@ namespace Data
 {
     public class Table
     {
-        public int width;
-        public int height;
-
-        public Table(int width, int height)
+        private int _width;
+        private int _height;
+        public int width
         {
-            this.width = width;
-            this.height = height;
+            get {
+                return _width;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("width", "Szerokość nie może być ujemna");
+                }
+                _width = value;
+            }
         }
+        public int height
+        {
+            get
+            {
+                return _height;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("height", "Wysokość nie może być ujemna");
+                }
+                _height = value;
+            }
+        }
+
+        public Table(int w, int h)
+        {
+            this.width = w;
+            this.height = h;
+        }
+
+        
     }
 }

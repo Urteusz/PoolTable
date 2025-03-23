@@ -8,34 +8,20 @@ namespace Logic
 {
     public class GameLogic
     {
-        private bool isRunning = false;
         private List<Ball> pilki;
+        private Table table;
+
+        public GameLogic(Table t)
+        {
+            pilki = new List<Ball>();
+            table = t;
+        }
 
         public void Start()
         {
-            pilki = new List<Ball>
-            {
-                new Ball(5, 5),
-                new Ball(3, 7),
-                new Ball(8, 2)
-            };
-
-            isRunning = true;
-
-            // Uruchomienie pętli gry w tle
-            Task.Run(Loop);
-
-            // Uruchomienie nasłuchiwania klawiatury w tle
-            Task.Run(HandleInput);
-        }
-
-        private void Loop()
-        {
-            while (isRunning)
-            {
-                CheckBallsPositions();
-                Thread.Sleep(10);
-            }
+            pilki.Add(new Ball(5, 5, 25));
+            pilki.Add(new Ball(3, 7, 25));
+            pilki.Add(new Ball(8, 2, 25));
         }
 
         private void CheckBallsPositions()
@@ -47,40 +33,25 @@ namespace Logic
                 Console.WriteLine($"Piłka na pozycji: X = {pilka.x}, Y = {pilka.y}");
             }
         }
-
-        private void MoveBalls()
+        public void Move(Ball pilka, int x_dodaj, int y_dodaj)
         {
-            foreach (var pilka in pilki)
+            int temp_x = pilka.x + x_dodaj + pilka.r;
+            int temp_y = pilka.y + y_dodaj + pilka.r;
+            if(temp_x > 0 && temp_x < table.width && temp_y > 0 && temp_y < table.height)
             {
-                pilka.Move(pilka.x + 1, pilka.y);
+                pilka.x = pilka.x + x_dodaj;
+                pilka.y = pilka.y + y_dodaj;
             }
+
         }
 
-        private void HandleInput()
+        public Ball getBall(int choose)
         {
-            Console.CursorVisible = false; // Ukrycie kursora, żeby nie migał
-            while (isRunning)
+            if (choose < 0 || choose >= pilki.Count)
             {
-                while (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    if (key.Key == ConsoleKey.Q)
-                    {
-                        Stop();
-                    }
-                    if (key.Key == ConsoleKey.W)
-                    {
-                        MoveBalls();
-                    }
-                }
-                Thread.Sleep(50);
+                throw new ArgumentOutOfRangeException("choose", "Nie ma piłki o takim indeksie");
             }
-        }
-
-        public void Stop()
-        {
-            isRunning = false;
-            Console.WriteLine("Gra zatrzymana.");
+            return pilki[choose];
         }
     }
 }
