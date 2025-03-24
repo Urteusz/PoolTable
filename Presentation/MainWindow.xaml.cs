@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -13,10 +14,11 @@ namespace Presentation
     public partial class MainWindow : Window
     {
         private GameLogic gameLogic;
-        private Ellipse ballShape;
+        private List<Ellipse> ballShapes = new();
         private Canvas canvas;
         private DispatcherTimer timer;
         private Table table;
+        private int selectedBallIndex = -1;
 
         public MainWindow()
         {
@@ -44,17 +46,24 @@ namespace Presentation
             };
             canvas.Children.Add(tableBorder);
 
-            ballShape = new Ellipse
+            for(int i = 0; i<gameLogic.getBallsCount();i++)
             {
-                Width = ball.r * 2,
-                Height = ball.r * 2,
-                Fill = (Brush)new BrushConverter().ConvertFromString("#" + ball.color),
-                Stroke = Brushes.Black,
-                StrokeThickness = 1
-            };
-
-            canvas.Children.Add(ballShape);
-            UpdateBallPosition(ball);
+                Ball pilka = gameLogic.getBall(i);
+                Ellipse ballShape = new Ellipse
+                {
+                    Width = pilka.r*2,
+                    Height = pilka.r*2,
+                    Fill = (Brush)new BrushConverter().ConvertFromString("#" + pilka.color),
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1
+                };
+                ballShape.Tag = i;
+                ballShape.MouseDown += Ball_Clicked;
+                ballShapes.Add(ballShape);
+                canvas.Children.Add(ballShape);
+                UpdateBallPosition(pilka, ballShape);
+            }
+           
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
@@ -62,18 +71,36 @@ namespace Presentation
             timer.Start();
         }
 
-        private void UpdateBallFall(object sender, EventArgs e)
+        private void Ball_Clicked(object sender, MouseButtonEventArgs e)
         {
-            Ball ball = gameLogic.getBall(0);
+            if (sender is Ellipse clickedBall)
+            {
+                selectedBallIndex = (int)clickedBall.Tag; // Pobranie indeksu piłki
+                MessageBox.Show($"Kliknięto piłkę {selectedBallIndex}");
 
-            gameLogic.Move(ball);
-            UpdateBallPosition(ball);
+                // Zmiana koloru wybranej piłki
+                clickedBall.Fill = Brushes.Red;
+            }
         }
 
-        private void UpdateBallPosition(Ball ball)
+        private void UpdateBallFall(object sender, EventArgs e)
         {
-            Canvas.SetLeft(ballShape, ball.x - ball.r);
-            Canvas.SetTop(ballShape, ball.y - ball.r);
+            for (int i = 0; i < ballShapes.Count; i++)
+            {
+                Ball ball = gameLogic.getBall(i);
+
+                gameLogic.Move(ball);
+                if (ball.vy != 0 && ball.vx != 0 )
+                {
+                    UpdateBallPosition(ball, ballShapes[i]);
+                }
+            }
+        }
+
+        private void UpdateBallPosition(Ball ball, Ellipse shape)
+        {
+            Canvas.SetLeft(shape, ball.x - ball.r);
+            Canvas.SetTop(shape, ball.y - ball.r);
         }
     }
 }

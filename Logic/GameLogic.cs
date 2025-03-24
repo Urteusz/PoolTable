@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Data;
@@ -20,8 +21,8 @@ namespace Logic
         public void Start()
         {
             pilki.Add(new Ball(100, 100, 25, 2 ,3));
-            pilki.Add(new Ball(3, 7, 25, 2, 3));
-            pilki.Add(new Ball(8, 2, 25, 2, 3));
+            pilki.Add(new Ball(300, 300, 25, 2, 3));
+            pilki.Add(new Ball(500, 400, 25, 2, 3));
         }
 
         private void CheckBallsPositions()
@@ -35,8 +36,8 @@ namespace Logic
         }
         public void Move(Ball pilka)
         {
-            int new_x = pilka.x + pilka.vx;
-            int new_y = pilka.y + pilka.vy;
+            double new_x = pilka.x + pilka.vx;
+            double new_y = pilka.y + pilka.vy;
 
             // Odbicie od ściany lewej i prawej
             if (new_x - pilka.r <= 0 || new_x + pilka.r >= table.width)
@@ -51,8 +52,8 @@ namespace Logic
             }
             if(new_x - pilka.r <= 0 || new_x + pilka.r >= table.width || new_y - pilka.r <= 0 || new_y + pilka.r >= table.height)
             {
-                pilka.vx = (int)(pilka.vx * 0.75);
-                pilka.vy = (int)(pilka.vy * 0.75);
+                pilka.vx = pilka.vx *0.75;
+                pilka.vy = pilka.vy *0.75;
             }
             pilka.x += pilka.vx;
             pilka.y += pilka.vy;
@@ -66,6 +67,11 @@ namespace Logic
                 throw new ArgumentOutOfRangeException("choose", "Nie ma piłki o takim indeksie");
             }
             return pilki[choose];
+        }
+
+        public int getBallsCount()
+        {
+            return pilki.Count;
         }
     }
 }

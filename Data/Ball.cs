@@ -1,8 +1,8 @@
 ﻿public class Ball
 {
     private string _color;
-    private int _x, _y, _r;
-    private int _vx, _vy;
+    private double _x, _y, _r;
+    private double _vx, _vy;
 
     public string color
     {
@@ -20,13 +20,13 @@
         }
     }
 
-    public int x { get { return _x; } set { _x = value; } }
-    public int y { get { return _y; } set { _y = value; } }
-    public int r { get { return _r; } set { _r = value; } }
-    public int vx { get { return _vx; } set { _vx = value; } }
-    public int vy { get { return _vy; } set { _vy = value; } }
+    public double x { get { return _x; } set { _x = value; } }
+    public double y { get { return _y; } set { _y = value; } }
+    public double r { get { return _r; } set { _r = value; } }
+    public double vx { get { return _vx; } set { _vx = value; } }
+    public double vy { get { return _vy; } set { _vy = value; } }
 
-    public Ball(int x, int y, int r, int vx, int vy)
+    public Ball(double x, double y, double r, double vx, double vy)
     {
         LosujKolor();
         this.x = x;
