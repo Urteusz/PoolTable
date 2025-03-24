@@ -19,9 +19,9 @@ namespace Logic
 
         public void Start()
         {
-            pilki.Add(new Ball(5, 5, 25));
-            pilki.Add(new Ball(3, 7, 25));
-            pilki.Add(new Ball(8, 2, 25));
+            pilki.Add(new Ball(100, 100, 25, 2 ,3));
+            pilki.Add(new Ball(3, 7, 25, 2, 3));
+            pilki.Add(new Ball(8, 2, 25, 2, 3));
         }
 
         private void CheckBallsPositions()
@@ -33,22 +33,31 @@ namespace Logic
                 Console.WriteLine($"Piłka na pozycji: X = {pilka.x}, Y = {pilka.y}");
             }
         }
-        public bool Move(Ball pilka, int x_dodaj, int y_dodaj)
+        public void Move(Ball pilka)
         {
-            int temp_x = pilka.x + x_dodaj + pilka.r;
-            int temp_y = pilka.y + y_dodaj + pilka.r;
-            if(temp_x > 0 && temp_x < table.width && temp_y > 0 && temp_y < table.height)
+            int new_x = pilka.x + pilka.vx;
+            int new_y = pilka.y + pilka.vy;
+
+            // Odbicie od ściany lewej i prawej
+            if (new_x - pilka.r <= 0 || new_x + pilka.r >= table.width)
             {
-                pilka.x = pilka.x + x_dodaj;
-                pilka.y = pilka.y + y_dodaj;
-                return true;
-            }
-            else
-            {
-                return false;
+                pilka.vx = -pilka.vx;
             }
 
+            // Odbicie od ściany górnej i dolnej
+            if (new_y - pilka.r <= 0 || new_y + pilka.r >= table.height)
+            {
+                pilka.vy = -pilka.vy;
+            }
+            if(new_x - pilka.r <= 0 || new_x + pilka.r >= table.width || new_y - pilka.r <= 0 || new_y + pilka.r >= table.height)
+            {
+                pilka.vx = (int)(pilka.vx * 0.75);
+                pilka.vy = (int)(pilka.vy * 0.75);
+            }
+            pilka.x += pilka.vx;
+            pilka.y += pilka.vy;
         }
+
 
         public Ball getBall(int choose)
         {

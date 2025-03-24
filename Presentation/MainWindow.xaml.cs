@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -25,7 +26,7 @@ namespace Presentation
             gameLogic.Start();
             Ball ball = gameLogic.getBall(0);
 
-            // Tworzymy interfejs graficzny
+          
             canvas = new Canvas()
             {
                 Width = table.width,
@@ -45,15 +46,15 @@ namespace Presentation
 
             ballShape = new Ellipse
             {
-                Width = ball.r,
-                Height = ball.r,
-                Fill = (Brush)new BrushConverter().ConvertFromString("#"+ball.color),
+                Width = ball.r * 2,
+                Height = ball.r * 2,
+                Fill = (Brush)new BrushConverter().ConvertFromString("#" + ball.color),
                 Stroke = Brushes.Black,
                 StrokeThickness = 1
             };
 
             canvas.Children.Add(ballShape);
-            UpdateBallPosition(gameLogic.getBall(0));
+            UpdateBallPosition(ball);
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
@@ -65,24 +66,14 @@ namespace Presentation
         {
             Ball ball = gameLogic.getBall(0);
 
-           
-            if (gameLogic.Move(ball, 0, 5))
-            {
-                UpdateBallPosition(ball);
-            }
-            else
-            {
-               
-                timer.Stop();
-            }
-
-            
+            gameLogic.Move(ball);
+            UpdateBallPosition(ball);
         }
 
         private void UpdateBallPosition(Ball ball)
         {
-            Canvas.SetLeft(ballShape, ball.x);
-            Canvas.SetTop(ballShape, ball.y);
+            Canvas.SetLeft(ballShape, ball.x - ball.r);
+            Canvas.SetTop(ballShape, ball.y - ball.r);
         }
     }
 }
