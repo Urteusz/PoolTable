@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -45,7 +43,6 @@ namespace Presentation
             };
             canvas.Children.Add(tableBorder);
 
-            // Tworzymy kółko
             ballShape = new Ellipse
             {
                 Width = ball.r,
@@ -58,7 +55,6 @@ namespace Presentation
             canvas.Children.Add(ballShape);
             UpdateBallPosition(gameLogic.getBall(0));
 
-            // Ustawiamy timer dla ruchu piłki
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
             timer.Tick += UpdateBallFall;
@@ -72,11 +68,12 @@ namespace Presentation
            
             if (gameLogic.Move(ball, 0, 5))
             {
-                timer.Stop();
+                UpdateBallPosition(ball);
             }
             else
             {
-                UpdateBallPosition(ball);
+               
+                timer.Stop();
             }
 
             
