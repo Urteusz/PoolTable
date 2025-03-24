@@ -69,14 +69,8 @@ namespace Presentation
         {
             Ball ball = gameLogic.getBall(0);
 
-            int x_temp = ball.x;
-            int y_temp = ball.y;
-            // Przesuwamy piłkę w dół
-            gameLogic.Move(ball, 0, 5);
-            int x_dif = ball.x - x_temp;
-            int y_dif = ball.y - y_temp;
-            Debug.WriteLine($"x_dif: {x_dif}, y_dif: {y_dif}");
-            if (x_dif == 0 && y_dif == 0)
+           
+            if (gameLogic.Move(ball, 0, 5))
             {
                 timer.Stop();
             }

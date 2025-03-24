@@ -33,7 +33,7 @@ namespace Logic
                 Console.WriteLine($"Piłka na pozycji: X = {pilka.x}, Y = {pilka.y}");
             }
         }
-        public void Move(Ball pilka, int x_dodaj, int y_dodaj)
+        public bool Move(Ball pilka, int x_dodaj, int y_dodaj)
         {
             int temp_x = pilka.x + x_dodaj + pilka.r;
             int temp_y = pilka.y + y_dodaj + pilka.r;
@@ -41,6 +41,11 @@ namespace Logic
             {
                 pilka.x = pilka.x + x_dodaj;
                 pilka.y = pilka.y + y_dodaj;
+                return true;
+            }
+            else
+            {
+                return false;
             }
 
         }
