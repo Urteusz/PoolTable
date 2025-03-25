@@ -8,6 +8,7 @@ namespace Data
 {
     public class Table
     {
+        private List<Ball> _pilki;
         private int _width;
         private int _height;
         public int width
@@ -40,10 +41,23 @@ namespace Data
             }
         }
 
+        public List<Ball> pilki
+        {
+            get
+            {
+                return _pilki;
+            }
+            set
+            {
+                _pilki = value;
+            }
+        }
+
         public Table(int w, int h)
         {
             this.width = w;
             this.height = h;
+            _pilki = new List<Ball>();
         }
 
         

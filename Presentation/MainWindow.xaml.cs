@@ -24,7 +24,7 @@ namespace Presentation
         {
             InitializeComponent();
             table = new Table(800, 600);
-            gameLogic = new GameLogic(table);
+            gameLogic = new GameLogic(table, 0.99f);
             gameLogic.Start();
             Ball ball = gameLogic.getBall(0);
 
@@ -67,7 +67,7 @@ namespace Presentation
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
-            timer.Tick += UpdateBallFall;
+            timer.Tick += UpdateBallMove;
             timer.Start();
         }
 
@@ -79,14 +79,14 @@ namespace Presentation
             }
         }
 
-        private void UpdateBallFall(object sender, EventArgs e)
+        private void UpdateBallMove(object sender, EventArgs e)
         {
             if(selectedBallIndex != -1)
             {
                 Ball ball = gameLogic.getBall(selectedBallIndex);
 
                 gameLogic.Move(ball);
-                if (ball.vy != 0 && ball.vx != 0)
+                if (ball.vy != 0 || ball.vx != 0)
                 {
                     UpdateBallPosition(ball, ballShapes[selectedBallIndex]);
                 }

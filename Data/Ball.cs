@@ -1,8 +1,8 @@
 ﻿public class Ball
 {
     private string _color;
-    private double _x, _y, _r;
-    private double _vx, _vy;
+    private float _x, _y, _r;
+    private float _vx, _vy;
 
     public string color
     {
@@ -20,13 +20,56 @@
         }
     }
 
-    public double x { get { return _x; } set { _x = value; } }
-    public double y { get { return _y; } set { _y = value; } }
-    public double r { get { return _r; } set { _r = value; } }
-    public double vx { get { return _vx; } set { _vx = value; } }
-    public double vy { get { return _vy; } set { _vy = value; } }
+    public float x
+    {
+        get { return _x; }
+        set
+        {
+            if (value >= 0)
+            {
+                _x = value;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("x", "Współrzędna x nie może być ujemna");
+            }
+        }
+    }
+    public float y
+    {
+        get
+        {
+            return _y;
+        }
+        set
+        {
+            if (value >= 0)
+            {
+                _y = value;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("y", "Współrzędna y nie może być ujemna");
+            }
+        }
+    }
 
-    public Ball(double x, double y, double r, double vx, double vy)
+
+    public float r { 
+        get { return _r; } 
+        set { 
+            if (value > 0) 
+            { _r = value; }
+            else
+            {
+                throw new ArgumentOutOfRangeException("r", "Współrzędna r nie może być ujemna");
+            }
+        } 
+    }
+    public float vx { get { return _vx; } set { _vx = value; } }
+    public float vy { get { return _vy; } set { _vy = value; } }
+
+    public Ball(float x, float y, float r, float vx, float vy)
     {
         LosujKolor();
         this.x = x;
