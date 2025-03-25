@@ -75,24 +75,20 @@ namespace Presentation
         {
             if (sender is Ellipse clickedBall)
             {
-                selectedBallIndex = (int)clickedBall.Tag; // Pobranie indeksu piłki
-                MessageBox.Show($"Kliknięto piłkę {selectedBallIndex}");
-
-                // Zmiana koloru wybranej piłki
-                clickedBall.Fill = Brushes.Red;
+                selectedBallIndex = (int)clickedBall.Tag;
             }
         }
 
         private void UpdateBallFall(object sender, EventArgs e)
         {
-            for (int i = 0; i < ballShapes.Count; i++)
+            if(selectedBallIndex != -1)
             {
-                Ball ball = gameLogic.getBall(i);
+                Ball ball = gameLogic.getBall(selectedBallIndex);
 
                 gameLogic.Move(ball);
-                if (ball.vy != 0 && ball.vx != 0 )
+                if (ball.vy != 0 && ball.vx != 0)
                 {
-                    UpdateBallPosition(ball, ballShapes[i]);
+                    UpdateBallPosition(ball, ballShapes[selectedBallIndex]);
                 }
             }
         }
