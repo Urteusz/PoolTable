@@ -5,7 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Presentation"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-    </Grid>
+        Title="Symulacja Piłek" Height="700" Width="850">
+
+    <DockPanel>
+
+        <!-- Panel sterujący -->
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10">
+            <TextBlock Text="Liczba piłek:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox x:Name="BallCountTextBox" Width="60" Margin="0,0,10,0"/>
+            <Button Content="Start" Click="StartButton_Click"/>
+        </StackPanel>
+
+        <!-- Miejsce na canvas z piłkami -->
+        <ContentControl x:Name="CanvasContainer" />
+    </DockPanel>
 </Window>

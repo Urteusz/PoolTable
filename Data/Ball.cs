@@ -1,8 +1,33 @@
-﻿public class Ball
+﻿using Data;
+using System.Numerics;
+
+public class Ball : IBall
 {
+    private readonly Guid id = Guid.NewGuid(); // Fixed placement of 'readonly' modifier  
     private string _color;
     private float _x, _y, _r;
     private float _vx, _vy;
+
+    public Ball(float x, float y, float r, float vx, float vy)
+    {
+        LosujKolor();
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.vx = vx;
+        this.vy = vy;
+    }
+
+    public Guid Id_ball
+    {
+        get { return id; }
+    }
+
+    public Ball createBall(int x, int y, int r, int vx, int vy)
+    {
+        Ball b = new Ball(x, y, r, vx, vy);
+        return b;
+    }
 
     public string color
     {
@@ -35,12 +60,10 @@
             }
         }
     }
+
     public float y
     {
-        get
-        {
-            return _y;
-        }
+        get { return _y; }
         set
         {
             if (value >= 0)
@@ -54,30 +77,24 @@
         }
     }
 
-
-    public float r { 
-        get { return _r; } 
-        set { 
-            if (value > 0) 
-            { _r = value; }
+    public float r
+    {
+        get { return _r; }
+        set
+        {
+            if (value > 0)
+            {
+                _r = value;
+            }
             else
             {
                 throw new ArgumentOutOfRangeException("r", "Współrzędna r nie może być ujemna");
             }
-        } 
+        }
     }
+
     public float vx { get { return _vx; } set { _vx = value; } }
     public float vy { get { return _vy; } set { _vy = value; } }
-
-    public Ball(float x, float y, float r, float vx, float vy)
-    {
-        LosujKolor();
-        this.x = x;
-        this.y = y;
-        this.r = r;
-        this.vx = vx;
-        this.vy = vy;
-    }
 
     public void LosujKolor()
     {

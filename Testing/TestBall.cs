@@ -11,6 +11,7 @@ namespace Testing
         {
             Ball ball = new Ball(10, 20, 5, 1, -1);
 
+
             Assert.That(ball.x, Is.EqualTo(10));
             Assert.That(ball.y, Is.EqualTo(20));
             Assert.That(ball.r, Is.EqualTo(5));
