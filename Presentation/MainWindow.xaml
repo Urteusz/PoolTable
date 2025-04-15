@@ -10,11 +10,12 @@
     <DockPanel>
 
         <!-- Panel sterujący -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10">
-            <TextBlock Text="Liczba piłek:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-            <TextBox x:Name="BallCountTextBox" Width="60" Margin="0,0,10,0"/>
-            <Button Content="Start" Click="StartButton_Click"/>
+        <StackPanel>
+            <TextBox Text="{Binding BallCountInput, UpdateSourceTrigger=PropertyChanged}" Width="100" />
+            <Button Content="Start" Command="{Binding StartCommand}" Width="80"/>
+            <ContentControl Content="{Binding CanvasContent}" />
         </StackPanel>
+
 
         <!-- Miejsce na canvas z piłkami -->
         <ContentControl x:Name="CanvasContainer" />
