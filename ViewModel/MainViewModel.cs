@@ -9,12 +9,12 @@ using Data;
 namespace ModelView
 {
     
-public class CreateView
+public class MainViewModel
     {
         private CanvasModel _canvas;
         private IGameLogic gameLogicAPI;
 
-        public CreateView(int w, int h)
+        public MainViewModel(int w, int h)
         {
             TableModel tableModel = new TableModel(w, h);
             this.gameLogicAPI = new GameLogic(tableModel.Table, 0.995f);

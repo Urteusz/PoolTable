@@ -8,13 +8,13 @@ namespace Presentation
     public partial class MainWindow : Window
     {
         private DispatcherTimer timer;
-        private CreateView view;
+        private MainViewModel view;
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(BallCountTextBox.Text, out int ballCount) && ballCount > 0)
             {
-                view = new CreateView(800, 600);
+                view = new MainViewModel(800, 600);
                 bool success = view.CreateBalls(ballCount);
 
                 if (!success)
