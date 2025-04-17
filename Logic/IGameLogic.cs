@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Logic
 {
@@ -13,10 +15,18 @@ namespace Logic
 
         bool AddBallCheck(IBall ball);
         List<IBall> getBalls();
-        void Move(IBall ball);
+
+        IBall getBall(Guid id);
+        void Move(object sender, ElapsedEventArgs e);
         bool CheckAllCollision();
 
         bool CheckCollision(IBall ball);
         int getCountBall();
+
+        Timer getTimer();
+
+        bool CreateBalls(int count);
+
+        void StopTimer();
     }
 }

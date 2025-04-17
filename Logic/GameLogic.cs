@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Timers;
 using Data;
+using Timer = System.Timers.Timer;
 
 namespace Logic
 {
@@ -11,6 +11,8 @@ namespace Logic
     {
         private readonly ITable tableAPI;
         private float _friction;
+        private Timer _timer;
+
 
         public float friction
         {
@@ -32,67 +34,79 @@ namespace Logic
         {
             tableAPI = t;
             this._friction = friction;
+            _timer = new Timer(20);
+            _timer.Elapsed += Move;
+            _timer.Start();
         }
-        public void Move(IBall pilka)
+        private void Move(object sender, ElapsedEventArgs e)
         {
-            float new_x = pilka.x + pilka.vx;
-            float new_y = pilka.y + pilka.vy;
-
-            // Odbicia od ścian
-            if (new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width)
+            for (int i = 0; i < tableAPI.CountBalls(); i++)
             {
-                pilka.vx = -pilka.vx * 0.95f; // odbicie + tłumienie
+                IBall pilka = tableAPI.balls[i];
+                float new_x = pilka.x + pilka.vx;
+                float new_y = pilka.y + pilka.vy;
+
+                // Odbicia od ścian
+                if (new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width)
+                {
+                    pilka.vx = -pilka.vx * 0.95f; // odbicie + tłumienie
+                }
+
+                if (new_y - pilka.r <= 0 || new_y + pilka.r >= tableAPI.height)
+                {
+                    pilka.vy = -pilka.vy * 0.95f;
+                }
+
+                // tarcie
+                pilka.vx *= friction;
+                pilka.vy *= friction;
+
+                pilka.x += pilka.vx;
+                pilka.y += pilka.vy;
             }
-
-            if (new_y - pilka.r <= 0 || new_y + pilka.r >= tableAPI.height)
-            {
-                pilka.vy = -pilka.vy * 0.95f;
-            }
-
-            // tarcie
-            pilka.vx *= friction;
-            pilka.vy *= friction;
-
-            pilka.x += pilka.vx;
-            pilka.y += pilka.vy;
         }
 
-        //public void Move(IBall pilka)
-        //{
+        public bool CreateBalls(int count)
+        {
+            if (count <= 0) return false;
 
-        //    float new_x = pilka.x + pilka.vx;
-        //    float new_y = pilka.y + pilka.vy;
+            int createdBalls = 0;
+            int maxTriesPerBall = 100;
 
-        //    if (CheckAllCollision())
-        //    {
-        //        Debug.WriteLine("Kolizja");
-        //        pilka.vx = -pilka.vx;
-        //        pilka.vy = -pilka.vy;
-        //    }
+            while (createdBalls < count)
+            {
+                bool placed = false;
+                int tries = 0;
 
-        //    if (new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width)
-        //    {
-        //        pilka.vx = -pilka.vx;
-        //    }
+                while (!placed && tries < maxTriesPerBall)
+                {
+                    float x = Random.Shared.Next(0, (int) tableAPI.width);
+                    float y = Random.Shared.Next(0, (int) tableAPI.height);
+                    float vx = Random.Shared.Next(-20, 20);
+                    float vy = Random.Shared.Next(-20, 20);
+                    IBall ball = new Ball(x, y, 25, vx, vy);
 
-        //    if (new_y - pilka.r <= 0 || new_y + pilka.r >= tableAPI.height)
-        //    {
-        //        pilka.vy = -pilka.vy;
-        //    }
-        //    if(new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width || new_y - pilka.r <= 0 || new_y + pilka.r >= tableAPI.height)
-        //    {
-        //        pilka.vx = pilka.vx * 0.75f;
-        //        pilka.vy = pilka.vy * 0.75f;
-        //    }
+                    if (AddBallCheck(ball))
+                    {
+                        tableAPI.AddBall(ball);
+                        placed = true;
+                        createdBalls++;
+                    }
 
-        //    pilka.vx *= friction;
-        //    pilka.vy *= friction;
+                    tries++;
+                }
 
-        //    pilka.x += pilka.vx;
-        //    pilka.y += pilka.vy;
-        //}
+                if (!placed)
+                {
+                    Console.WriteLine($"Nie udało się dodać kuli numer {createdBalls + 1} po {maxTriesPerBall} próbach.");
+                    return false;
+                }
+            }
 
-        
+            return true;
+        }
+
+
         public bool CheckAllCollision()
         {
             int count = tableAPI.CountBalls();
@@ -178,7 +192,39 @@ namespace Logic
             return tableAPI;
         }
 
+        void IGameLogic.Move(object sender, ElapsedEventArgs e)
+        {
+            Move(sender, e);
+        }
 
+        Timer IGameLogic.getTimer()
+        {
+            return _timer;
+        }
 
+        IBall getBall(Guid id)
+        {
+            foreach (var ball in tableAPI.balls)
+            {
+                if (ball.Id_ball == id)
+                {
+                    return ball;
+                }
+            }
+            return null;
+        }
+
+        IBall IGameLogic.getBall(Guid id)
+        {
+            return getBall(id);
+        }
+
+        public void StopTimer()
+        {
+            if (_timer != null)
+            {
+                _timer.Stop();
+            }
+        }
     }
 }
