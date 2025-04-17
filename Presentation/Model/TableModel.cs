@@ -1,17 +1,20 @@
 ﻿using Model;
+using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
 using System.Windows.Shapes;
+using System.Windows.Data;
 
 public class TableModel
 {
-    private List<BallModel> _balls = new();
     private Rectangle _tableBorder;
     private Canvas _canvas;
 
     public int Width { get; }
     public int Height { get; }
+
+    public ObservableCollection<BallModel> Balls { get; } = new();
 
     public TableModel(int width, int height)
     {
@@ -34,16 +37,25 @@ public class TableModel
         };
     }
 
-    public List<BallModel> Balls => _balls;
 
     public void AddBall(BallModel ballModel)
     {
         if (ballModel != null)
         {
-            _balls.Add(ballModel);
+            Balls.Add(ballModel);
+
+            Binding leftBinding = new Binding("XCanvas") { Source = ballModel };
+            Binding topBinding = new Binding("YCanvas") { Source = ballModel };
+
+
+            ballModel.Shape.SetBinding(Canvas.LeftProperty, leftBinding);
+            ballModel.Shape.SetBinding(Canvas.TopProperty, topBinding);
+
+            AddObject(ballModel.Shape);
         }
-        AddObject(ballModel.Shape);
     }
+
+
 
     public void AddObject(UIElement obj)
     {

@@ -61,6 +61,9 @@ namespace ModelView
                     MessageBox.Show("Nie udało się utworzyć wszystkich piłek. Spróbuj ponownie.");
                     return;
                 }
+
+                gameLogicAPI.StartTimer();
+
                 OnPropertyChanged(nameof(CanvasContent)); // odświeżenie widoku
             }
             else
@@ -92,7 +95,6 @@ namespace ModelView
                     IBall ball = gameLogicAPI.getTable().balls[i];
                     BallModel ballModel = new BallModel(ball.x, ball.y, ball.r, ball.Id_ball, ball.color);
                     tableModel.AddBall(ballModel);
-                    UpdateBallPosition(ball, ballModel.Shape);
                 }
                 return true;
             }
@@ -103,27 +105,23 @@ namespace ModelView
         {
             if (_isDisposed) return;
 
-            foreach (var ballModel in tableModel.Balls)
+
+
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                IBall logicBall = gameLogicAPI.getBall(ballModel.Id);
-                if (logicBall != null)
+                foreach (var ballModel in tableModel.Balls)
                 {
-                    ballModel.X = logicBall.x;
-                    ballModel.Y = logicBall.y;
-                    Application.Current.Dispatcher.Invoke(() =>
+                    IBall logicBall = gameLogicAPI.getBall(ballModel.Id);
+                    if (logicBall != null)
                     {
-                        Canvas.SetLeft(ballModel.Shape, logicBall.x - logicBall.r);
-                        Canvas.SetTop(ballModel.Shape, logicBall.y - logicBall.r);
-                    });
+                        ballModel.X = logicBall.x;
+                        ballModel.Y = logicBall.y;
+                    }
                 }
-            }
+            });
         }
 
-        private void UpdateBallPosition(IBall ball, System.Windows.Shapes.Ellipse shape)
-        {
-            Canvas.SetLeft(shape, ball.x - ball.r);
-            Canvas.SetTop(shape, ball.y - ball.r);
-        }
+       
 
         public void Dispose()
         {

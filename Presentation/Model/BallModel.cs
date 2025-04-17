@@ -1,22 +1,58 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.ComponentModel;
+using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace Model
 {
-    public class BallModel
+    public class BallModel : INotifyPropertyChanged
     {
-        public float X { get; set; }
-        public float Y { get; set; }
+        private float _x;
+        private float _y;
+
+        public double X
+        {
+            get => (double)_x;
+            set
+            {
+                float newVal = (float)value;
+                if (_x != newVal)
+                {
+                    _x = newVal;
+                    OnPropertyChanged(nameof(X));
+                    OnPropertyChanged(nameof(XCanvas));
+                }
+            }
+        }
+
+        public double Y
+        {
+            get => (double)_y;
+            set
+            {
+                float newVal = (float)value;
+                if (_y != newVal)
+                {
+                    _y = newVal;
+                    OnPropertyChanged(nameof(Y));
+                    OnPropertyChanged(nameof(YCanvas)); 
+                }
+            }
+        }
+
+        public double XCanvas => X - Radius;
+        public double YCanvas => Y - Radius;
+
         public float Radius { get; }
         public string Color { get; }
         public Guid Id { get; }
 
         public Ellipse Shape { get; }
 
-        public BallModel(float x, float y, float radius, Guid id, string color = "FF0000" )
+        public BallModel(float x, float y, float radius, Guid id, string color = "FF0000")
         {
-            X = x;
-            Y = y;
+            _x = x;
+            _y = y;
             Radius = radius;
             Color = color;
             Id = id;
@@ -30,6 +66,13 @@ namespace Model
                 StrokeThickness = 1,
                 Tag = Id
             };
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

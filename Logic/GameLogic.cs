@@ -34,10 +34,18 @@ namespace Logic
         {
             tableAPI = t;
             this._friction = friction;
-            _timer = new Timer(20);
+            _timer = new Timer(16);
             _timer.Elapsed += Move;
-            _timer.Start();
         }
+
+        public void StartTimer()
+        {
+            if (_timer != null)
+            {
+                _timer.Start();
+            }
+        }
+
         private void Move(object sender, ElapsedEventArgs e)
         {
             for (int i = 0; i < tableAPI.CountBalls(); i++)
@@ -45,6 +53,7 @@ namespace Logic
                 IBall pilka = tableAPI.balls[i];
                 float new_x = pilka.x + pilka.vx;
                 float new_y = pilka.y + pilka.vy;
+
 
                 // Odbicia od ścian
                 if (new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width)

@@ -13,6 +13,7 @@ namespace Logic
     {
         ITable getTable();
 
+        void StartTimer();
         bool AddBallCheck(IBall ball);
         List<IBall> getBalls();
 
