@@ -114,8 +114,8 @@ namespace ModelView
                     IBall logicBall = gameLogicAPI.getBall(ballModel.Id);
                     if (logicBall != null)
                     {
-                        ballModel.X = logicBall.x;
-                        ballModel.Y = logicBall.y;
+                        ballModel.X = logicBall.x - logicBall.r;
+                        ballModel.Y = logicBall.y - logicBall.r;
                     }
                 }
             });

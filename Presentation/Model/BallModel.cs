@@ -20,7 +20,6 @@ namespace Model
                 {
                     _x = newVal;
                     OnPropertyChanged(nameof(X));
-                    OnPropertyChanged(nameof(XCanvas));
                 }
             }
         }
@@ -35,13 +34,9 @@ namespace Model
                 {
                     _y = newVal;
                     OnPropertyChanged(nameof(Y));
-                    OnPropertyChanged(nameof(YCanvas)); 
                 }
             }
         }
-
-        public double XCanvas => X - Radius;
-        public double YCanvas => Y - Radius;
 
         public float Radius { get; }
         public string Color { get; }

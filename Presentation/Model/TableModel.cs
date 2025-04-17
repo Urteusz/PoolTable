@@ -44,8 +44,8 @@ public class TableModel
         {
             Balls.Add(ballModel);
 
-            Binding leftBinding = new Binding("XCanvas") { Source = ballModel };
-            Binding topBinding = new Binding("YCanvas") { Source = ballModel };
+            Binding leftBinding = new Binding("X") { Source = ballModel };
+            Binding topBinding = new Binding("Y") { Source = ballModel };
 
 
             ballModel.Shape.SetBinding(Canvas.LeftProperty, leftBinding);
