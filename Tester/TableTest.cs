@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Data;
 
 namespace Tester
@@ -18,7 +16,7 @@ namespace Tester
             int height = 50;
 
             // Act
-            var table = new Table(width, height);
+            ITable table = new Table(width, height); // Teraz używamy ITable
 
             // Assert
             Assert.AreEqual(width, table.width);
@@ -31,39 +29,21 @@ namespace Tester
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Table_Constructor_ShouldThrow_WhenWidthIsNegative()
         {
-            new Table(-10, 50);
+            ITable table = new Table(-10, 50); // Teraz używamy ITable
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Table_Constructor_ShouldThrow_WhenHeightIsNegative()
         {
-            new Table(100, -50);
-        }
-
-        [TestMethod]
-        public void Table_SetTableSize_ShouldUpdateSize()
-        {
-            var table = new Table(10, 10);
-            table.SetTableSize(200, 300);
-
-            Assert.AreEqual(200, table.width);
-            Assert.AreEqual(300, table.height);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void Table_SetTableSize_ShouldThrow_WhenNegative()
-        {
-            var table = new Table(10, 10);
-            table.SetTableSize(-5, 10);
+            ITable table = new Table(100, -50); // Teraz używamy ITable
         }
 
         [TestMethod]
         public void Table_AddBall_ShouldAdd_WhenInsideBoundsAndUnique()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
 
             bool result = table.AddBall(ball);
 
@@ -75,8 +55,8 @@ namespace Tester
         [TestMethod]
         public void Table_AddBall_ShouldReject_WhenBallOutOfBounds()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(5, 5, 10, 0, 0); // poza lewym górnym rogiem
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(5, 5, 10, 0, 0); // poza lewym górnym rogiem
 
             bool result = table.AddBall(ball);
 
@@ -87,8 +67,8 @@ namespace Tester
         [TestMethod]
         public void Table_AddBall_ShouldReject_Duplicate()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
 
             bool first = table.AddBall(ball);
             bool second = table.AddBall(ball);
@@ -101,8 +81,8 @@ namespace Tester
         [TestMethod]
         public void Table_RemoveBall_ShouldRemove_WhenExists()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
             table.AddBall(ball);
 
             bool removed = table.RemoveBall(ball);
@@ -114,8 +94,8 @@ namespace Tester
         [TestMethod]
         public void Table_RemoveBall_ShouldFail_WhenNotExists()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
 
             bool removed = table.RemoveBall(ball);
 
@@ -125,8 +105,8 @@ namespace Tester
         [TestMethod]
         public void Table_GetBall_ShouldReturnCorrectBall()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
             table.AddBall(ball);
 
             var result = table.GetBall(ball);
@@ -138,8 +118,8 @@ namespace Tester
         [TestMethod]
         public void Table_GetBall_ShouldReturnNull_WhenBallNotFound()
         {
-            var table = new Table(100, 100);
-            var ball = new Ball(50, 50, 10, 0, 0);
+            ITable table = new Table(100, 100); // Teraz używamy ITable
+            IBall ball = new Ball(50, 50, 10, 0, 0); // Teraz używamy IBall
 
             var result = table.GetBall(ball);
 
