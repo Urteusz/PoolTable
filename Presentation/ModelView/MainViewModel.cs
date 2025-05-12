@@ -53,7 +53,7 @@ namespace ModelView
             {
                 tableModel = new TableModel(canvasWidth, canvasHeight);
                 Table t = new Table(canvasWidth, canvasHeight);
-                gameLogicAPI = new GameLogic(t, 0.995f);
+                gameLogicAPI = new GameLogic(t);
                 gameLogicAPI.getTimer().Elapsed += UpdateBallMove;
                 bool success = CreateBalls(ballCount);
                 if (!success)

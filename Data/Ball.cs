@@ -77,6 +77,12 @@ public class Ball : IBall
         }
     }
 
+    public void SetPosition()
+    {
+        this.x = this.x + this.vx;
+        this.y = this.y + this.vy;
+    }
+
     public float r
     {
         get { return _r; }

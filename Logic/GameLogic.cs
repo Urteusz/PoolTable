@@ -10,30 +10,11 @@ namespace Logic
     public class GameLogic : IGameLogic
     {
         private readonly ITable tableAPI;
-        private float _friction;
         private Timer _timer;
 
-
-        public float friction
-        {
-            get
-            {
-                return _friction;
-            }
-            set
-            {
-                if (value < 0 || value > 1)
-                {
-                    throw new ArgumentOutOfRangeException("friction", "Tarcie musi być z przedziału [0, 1]");
-                }
-                _friction = value;
-            }
-        }
-
-        public GameLogic(Table t, float friction)
+        public GameLogic(Table t)
         {
             tableAPI = t;
-            this._friction = friction;
             _timer = new Timer(16);
             _timer.Elapsed += Move;
         }
@@ -48,32 +29,25 @@ namespace Logic
 
         private void Move(object sender, ElapsedEventArgs e)
         {
+            foreach (var ball in tableAPI.balls)
+            {
+                ball.SetPosition();
+            }
+
+            foreach (var ball in tableAPI.balls)
+            {
+                HandleWallCollision(ball);
+            }
+
             for (int i = 0; i < tableAPI.CountBalls(); i++)
             {
-                IBall pilka = tableAPI.balls[i];
-                float new_x = pilka.x + pilka.vx;
-                float new_y = pilka.y + pilka.vy;
-
-
-                // Odbicia od ścian
-                if (new_x - pilka.r <= 0 || new_x + pilka.r >= tableAPI.width)
+                for (int j = i + 1; j < tableAPI.CountBalls(); j++)
                 {
-                    pilka.vx = -pilka.vx * 0.95f; // odbicie + tłumienie
+                    ResolveCollision(tableAPI.balls[i], tableAPI.balls[j]);
                 }
-
-                if (new_y - pilka.r <= 0 || new_y + pilka.r >= tableAPI.height)
-                {
-                    pilka.vy = -pilka.vy * 0.95f;
-                }
-
-                // tarcie
-                pilka.vx *= friction;
-                pilka.vy *= friction;
-
-                pilka.x += pilka.vx;
-                pilka.y += pilka.vy;
             }
         }
+
 
         public bool CreateBalls(int count)
         {
@@ -91,8 +65,8 @@ namespace Logic
                 {
                     float x = Random.Shared.Next(0, (int) tableAPI.width);
                     float y = Random.Shared.Next(0, (int) tableAPI.height);
-                    float vx = Random.Shared.Next(-20, 20);
-                    float vy = Random.Shared.Next(-20, 20);
+                    float vx = Random.Shared.Next(-5, 5);
+                    float vy = Random.Shared.Next(-5, 5);
                     IBall ball = new Ball(x, y, 25, vx, vy);
 
                     if (AddBallCheck(ball))
@@ -116,29 +90,6 @@ namespace Logic
         }
 
 
-        public bool CheckAllCollision()
-        {
-            int count = tableAPI.CountBalls();
-            for (int i = 0; i < count; i++)
-            {
-                for(int j = 0; j < count; j++)
-                {
-                    if (i != j)
-                    {
-
-                        float distance_x = tableAPI.balls[i].x - tableAPI.balls[j].x;
-                        float distance_y = tableAPI.balls[i].y  - tableAPI.balls[j].y;
-                        float distance = distance_x * distance_x + distance_y * distance_y;
-                        Debug.WriteLine($"Odległość między piłkami {i} i {j} wynosi {distance}");
-                        if (distance <= tableAPI.balls[i].r * tableAPI.balls[i].r + tableAPI.balls[j].r * tableAPI.balls[j].r)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
 
         public bool CheckCollision(IBall ball)
         {
@@ -235,5 +186,66 @@ namespace Logic
                 _timer.Stop();
             }
         }
+
+        private void ResolveCollision(IBall ball1, IBall ball2)
+        {
+            float dx = ball1.x - ball2.x;
+            float dy = ball1.y - ball2.y;
+            float distance = MathF.Sqrt(dx * dx + dy * dy);
+
+            if (distance >= ball1.r + ball2.r) return; // Brak kolizji
+            if (distance == 0) return; // uniknięcie dzielenia przez zero
+
+            float nx = dx / distance;
+            float ny = dy / distance;
+
+            float tx = -ny;
+            float ty = nx;
+
+            float dpTan1 = ball1.vx * tx + ball1.vy * ty;
+            float dpTan2 = ball2.vx * tx + ball2.vy * ty;
+
+            float dpNorm1 = ball1.vx * nx + ball1.vy * ny;
+            float dpNorm2 = ball2.vx * nx + ball2.vy * ny;
+
+            float m1 = ball1.r;
+            float m2 = ball2.r;
+
+            // Nowe składowe normalne prędkości (sprężyste zderzenie)
+            float new_dpNorm1 = (dpNorm1 * (m1 - m2) + 2f * m2 * dpNorm2) / (m1 + m2);
+            float new_dpNorm2 = (dpNorm2 * (m2 - m1) + 2f * m1 * dpNorm1) / (m1 + m2);
+
+            ball1.vx = tx * dpTan1 + nx * new_dpNorm1;
+            ball1.vy = ty * dpTan1 + ny * new_dpNorm1;
+            ball2.vx = tx * dpTan2 + nx * new_dpNorm2;
+            ball2.vy = ty * dpTan2 + ny * new_dpNorm2;
+
+        }
+        private void HandleWallCollision(IBall ball)
+        {
+            if (ball.x - ball.r < 0 && ball.vx < 0)
+            {
+                ball.vx *= -1;
+                ball.x = ball.r;
+            }
+            else if (ball.x + ball.r > tableAPI.width && ball.vx > 0)
+            {
+                ball.vx *= -1;
+                ball.x = tableAPI.width - ball.r;
+            }
+
+            if (ball.y - ball.r < 0 && ball.vy < 0)
+            {
+                ball.vy *= -1;
+                ball.y = ball.r;
+            }
+            else if (ball.y + ball.r > tableAPI.height && ball.vy > 0)
+            {
+                ball.vy *= -1;
+                ball.y = tableAPI.height - ball.r;
+            }
+        }
+
+
     }
 }

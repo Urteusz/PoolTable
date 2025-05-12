@@ -19,7 +19,6 @@ namespace Logic
 
         IBall getBall(Guid id);
         void Move(object sender, ElapsedEventArgs e);
-        bool CheckAllCollision();
 
         bool CheckCollision(IBall ball);
         int getCountBall();

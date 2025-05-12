@@ -24,6 +24,10 @@ namespace Data
 
         float r { get; set; }
 
+        void SetPosition();
+
+        void LosujKolor();
+
 
 
 
