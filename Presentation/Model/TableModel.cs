@@ -67,6 +67,13 @@ namespace Model
 
         public Canvas canvas => _canvas;
         public Rectangle TableBorder => _tableBorder;
+
+        public void ClearBalls()
+        {
+            Balls.Clear();
+            _canvas.Children.Clear();
+            _canvas.Children.Add(_tableBorder);
+        }
     }
 
 }

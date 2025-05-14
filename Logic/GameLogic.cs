@@ -1,116 +1,122 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Timers;
 using Data;
-using Timer = System.Timers.Timer;
 
 namespace Logic
 {
     public class GameLogic : IGameLogic
     {
         private readonly ITable tableAPI;
-        private Timer _timer;
+        private readonly object _lockObject = new object(); // Dodano synchronizację
 
         public GameLogic(Table t)
         {
             tableAPI = t;
-            _timer = new Timer(16);
-            _timer.Elapsed += Move;
+            // Usunięto _timer - już nie jest potrzebny
         }
 
-        public void StartTimer()
+        // Usunięto StartTimer() - już nie jest potrzebny
+        // Usunięto StopTimer() - już nie jest potrzebny
+        // Usunięto getTimer() - już nie jest potrzebny
+
+        public void Move(object sender, EventArgs e)
         {
-            if (_timer != null)
+            lock (_lockObject) // Dodano synchronizację
             {
-                _timer.Start();
-            }
-        }
-
-        private void Move(object sender, ElapsedEventArgs e)
-        {
-            foreach (var ball in tableAPI.balls)
-            {
-                ball.SetPosition();
-            }
-
-            foreach (var ball in tableAPI.balls)
-            {
-                HandleWallCollision(ball);
-            }
-
-            for (int i = 0; i < tableAPI.CountBalls(); i++)
-            {
-                for (int j = i + 1; j < tableAPI.CountBalls(); j++)
+                // Kopiujemy listę kulek aby uniknąć modyfikacji podczas iteracji
+                var ballsCopy = new List<IBall>();
+                foreach (var ball in tableAPI.balls)
                 {
-                    ResolveCollision(tableAPI.balls[i], tableAPI.balls[j]);
+                    ballsCopy.Add(ball);
+                }
+
+                foreach (var ball in ballsCopy)
+                {
+                    ball.SetPosition();
+                }
+
+                foreach (var ball in ballsCopy)
+                {
+                    HandleWallCollision(ball);
+                }
+
+                for (int i = 0; i < ballsCopy.Count; i++)
+                {
+                    for (int j = i + 1; j < ballsCopy.Count; j++)
+                    {
+                        ResolveCollision(ballsCopy[i], ballsCopy[j]);
+                    }
                 }
             }
         }
 
-
+        // Reszta kodu pozostaje bez zmian...
         public bool CreateBalls(int count)
         {
-            if (count <= 0) return false;
-
-            int createdBalls = 0;
-            int maxTriesPerBall = 100;
-
-            while (createdBalls < count)
+            lock (_lockObject) // Dodano synchronizację
             {
-                bool placed = false;
-                int tries = 0;
+                if (count <= 0) return false;
 
-                while (!placed && tries < maxTriesPerBall)
+                int createdBalls = 0;
+                int maxTriesPerBall = 100;
+
+                while (createdBalls < count)
                 {
-                    float x = Random.Shared.Next(0, (int) tableAPI.width);
-                    float y = Random.Shared.Next(0, (int) tableAPI.height);
-                    float vx = Random.Shared.Next(-5, 5);
-                    float vy = Random.Shared.Next(-5, 5);
-                    IBall ball = new Ball(x, y, 25, vx, vy);
+                    bool placed = false;
+                    int tries = 0;
 
-                    if (AddBallCheck(ball))
+                    while (!placed && tries < maxTriesPerBall)
                     {
-                        tableAPI.AddBall(ball);
-                        placed = true;
-                        createdBalls++;
+                        float x = Random.Shared.Next(0, (int)tableAPI.width);
+                        float y = Random.Shared.Next(0, (int)tableAPI.height);
+                        float vx = Random.Shared.Next(-5, 5);
+                        float vy = Random.Shared.Next(-5, 5);
+                        IBall ball = new Ball(x, y, 25, vx, vy);
+
+                        if (AddBallCheck(ball))
+                        {
+                            tableAPI.AddBall(ball);
+                            placed = true;
+                            createdBalls++;
+                        }
+
+                        tries++;
                     }
 
-                    tries++;
+                    if (!placed)
+                    {
+                        Console.WriteLine($"Nie udało się dodać kuli numer {createdBalls + 1} po {maxTriesPerBall} próbach.");
+                        return false;
+                    }
                 }
 
-                if (!placed)
-                {
-                    Console.WriteLine($"Nie udało się dodać kuli numer {createdBalls + 1} po {maxTriesPerBall} próbach.");
-                    return false;
-                }
+                return true;
             }
-
-            return true;
         }
-
-
 
         public bool CheckCollision(IBall ball)
         {
-            Guid id = ball.Id_ball;
-            int count = tableAPI.CountBalls();
-            for (int i = 0; i < count; i++)
+            lock (_lockObject) // Dodano synchronizację
             {
-                if (tableAPI.balls[i].Id_ball != id)
+                Guid id = ball.Id_ball;
+                int count = tableAPI.CountBalls();
+                for (int i = 0; i < count; i++)
                 {
-                    float distance_x = tableAPI.balls[i].x - ball.x;
-                    float distance_y = tableAPI.balls[i].y - ball.y;
-                    float distance = distance_x * distance_x + distance_y * distance_y;
-                    float radiusSum = tableAPI.balls[i].r + ball.r;
-                    if (distance <= radiusSum * radiusSum)
+                    if (tableAPI.balls[i].Id_ball != id)
                     {
-                        return true;
+                        float distance_x = tableAPI.balls[i].x - ball.x;
+                        float distance_y = tableAPI.balls[i].y - ball.y;
+                        float distance = distance_x * distance_x + distance_y * distance_y;
+                        float radiusSum = tableAPI.balls[i].r + ball.r;
+                        if (distance <= radiusSum * radiusSum)
+                        {
+                            return true;
+                        }
                     }
-
                 }
+                return false;
             }
-            return false;
         }
 
         public bool AddBallCheck(IBall ball)
@@ -134,17 +140,23 @@ namespace Logic
 
         public List<IBall> getBalls()
         {
-            List<IBall> balls = new List<IBall>();
-            foreach (var ball in tableAPI.balls)
+            lock (_lockObject) // Dodano synchronizację
             {
-                balls.Add(ball);
+                List<IBall> balls = new List<IBall>();
+                foreach (var ball in tableAPI.balls)
+                {
+                    balls.Add(ball);
+                }
+                return balls;
             }
-            return balls;
         }
 
         public int getCountBall()
         {
-            return tableAPI.balls.Count;
+            lock (_lockObject) // Dodano synchronizację
+            {
+                return tableAPI.balls.Count;
+            }
         }
 
         public ITable getTable()
@@ -152,26 +164,19 @@ namespace Logic
             return tableAPI;
         }
 
-        void IGameLogic.Move(object sender, ElapsedEventArgs e)
-        {
-            Move(sender, e);
-        }
-
-        Timer IGameLogic.getTimer()
-        {
-            return _timer;
-        }
-
         IBall getBall(Guid id)
         {
-            foreach (var ball in tableAPI.balls)
+            lock (_lockObject) // Dodano synchronizację
             {
-                if (ball.Id_ball == id)
+                foreach (var ball in tableAPI.balls)
                 {
-                    return ball;
+                    if (ball.Id_ball == id)
+                    {
+                        return ball;
+                    }
                 }
+                return null;
             }
-            return null;
         }
 
         IBall IGameLogic.getBall(Guid id)
@@ -179,22 +184,15 @@ namespace Logic
             return getBall(id);
         }
 
-        public void StopTimer()
-        {
-            if (_timer != null)
-            {
-                _timer.Stop();
-            }
-        }
-
         private void ResolveCollision(IBall ball1, IBall ball2)
         {
+            // Ten kod już jest w lock(_lockObject) w Move()
             float dx = ball1.x - ball2.x;
             float dy = ball1.y - ball2.y;
             float distance = MathF.Sqrt(dx * dx + dy * dy);
 
-            if (distance >= ball1.r + ball2.r) return; // Brak kolizji
-            if (distance == 0) return; // uniknięcie dzielenia przez zero
+            if (distance >= ball1.r + ball2.r) return;
+            if (distance == 0) return;
 
             float nx = dx / distance;
             float ny = dy / distance;
@@ -211,7 +209,6 @@ namespace Logic
             float m1 = ball1.r;
             float m2 = ball2.r;
 
-            // Nowe składowe normalne prędkości (sprężyste zderzenie)
             float new_dpNorm1 = (dpNorm1 * (m1 - m2) + 2f * m2 * dpNorm2) / (m1 + m2);
             float new_dpNorm2 = (dpNorm2 * (m2 - m1) + 2f * m1 * dpNorm1) / (m1 + m2);
 
@@ -219,10 +216,11 @@ namespace Logic
             ball1.vy = ty * dpTan1 + ny * new_dpNorm1;
             ball2.vx = tx * dpTan2 + nx * new_dpNorm2;
             ball2.vy = ty * dpTan2 + ny * new_dpNorm2;
-
         }
+
         private void HandleWallCollision(IBall ball)
         {
+            // Ten kod już jest w lock(_lockObject) w Move()
             if (ball.x - ball.r < 0 && ball.vx < 0)
             {
                 ball.vx *= -1;
@@ -245,7 +243,5 @@ namespace Logic
                 ball.y = tableAPI.height - ball.r;
             }
         }
-
-
     }
 }

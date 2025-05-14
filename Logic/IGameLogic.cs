@@ -1,32 +1,23 @@
 ﻿using Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
-using Timer = System.Timers.Timer;
 
 namespace Logic
 {
     public interface IGameLogic
     {
         ITable getTable();
-
-        void StartTimer();
         bool AddBallCheck(IBall ball);
         List<IBall> getBalls();
-
         IBall getBall(Guid id);
-        void Move(object sender, ElapsedEventArgs e);
-
+        void Move(object sender, EventArgs e); // Zmieniono z ElapsedEventArgs na EventArgs
         bool CheckCollision(IBall ball);
         int getCountBall();
-
-        Timer getTimer();
-
         bool CreateBalls(int count);
 
-        void StopTimer();
+        // Usunięto następujące metody związane z timerem:
+        // void StartTimer();
+        // void StopTimer();
+        // Timer getTimer();
     }
 }
