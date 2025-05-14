@@ -13,12 +13,7 @@ namespace Logic
         public GameLogic(Table t)
         {
             tableAPI = t;
-            // Usunięto _timer - już nie jest potrzebny
         }
-
-        // Usunięto StartTimer() - już nie jest potrzebny
-        // Usunięto StopTimer() - już nie jest potrzebny
-        // Usunięto getTimer() - już nie jest potrzebny
 
         public void Move(object sender, EventArgs e)
         {
@@ -191,8 +186,7 @@ namespace Logic
             float dy = ball1.y - ball2.y;
             float distance = MathF.Sqrt(dx * dx + dy * dy);
 
-            if (distance >= ball1.r + ball2.r) return;
-            if (distance == 0) return;
+            if (distance == 0 || distance >= ball1.r + ball2.r) return;
 
             float nx = dx / distance;
             float ny = dy / distance;
@@ -216,6 +210,16 @@ namespace Logic
             ball1.vy = ty * dpTan1 + ny * new_dpNorm1;
             ball2.vx = tx * dpTan2 + nx * new_dpNorm2;
             ball2.vy = ty * dpTan2 + ny * new_dpNorm2;
+
+            // Separacja kul, by uniknąć ich nakładania się
+            float overlap = 0.5f * (ball1.r + ball2.r - distance + 0.1f); // Dodaj mały margines
+
+            // Przesuwanie kul w przeciwnych kierunkach
+            ball1.x += nx * overlap;
+            ball1.y += ny * overlap;
+            ball2.x -= nx * overlap;
+            ball2.y -= ny * overlap;
+
         }
 
         private void HandleWallCollision(IBall ball)

@@ -7,9 +7,6 @@ using CommunityToolkit.Mvvm.Input;
 using System.Windows;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
 using System.Reactive;
 
 namespace ModelView
@@ -28,7 +25,6 @@ namespace ModelView
         private readonly int canvasHeight = 600;
         private bool _isDisposed = false;
 
-        // Observable dla aktualizacji pozycji kulek
         private readonly Subject<Unit> _updateSubject = new Subject<Unit>();
         private IDisposable _updateSubscription;
         private CancellationTokenSource _cancellationTokenSource;
@@ -43,13 +39,11 @@ namespace ModelView
             StartCommand = new RelayCommand(StartSimulation);
             CleanupCommand = new RelayCommand(Cleanup);
 
-            // Subscribe to application exit event
             if (Application.Current != null)
             {
                 Application.Current.Exit += OnApplicationExit;
             }
 
-            // Alternative if you're using a window directly
             if (Application.Current?.MainWindow != null)
             {
                 Application.Current.MainWindow.Closing += OnWindowClosing;
@@ -61,14 +55,13 @@ namespace ModelView
             Dispose();
         }
 
-        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnWindowClosing(object sender, CancelEventArgs e)
         {
             Dispose();
         }
 
         private void StartSimulation()
         {
-            // Clean up existing resources first
             Cleanup();
 
             if (int.TryParse(BallCountInput, out int ballCount) && ballCount > 0)
@@ -84,19 +77,16 @@ namespace ModelView
                     return;
                 }
 
-                // Zamiast timera używamy Observable z intervalem
                 _cancellationTokenSource = new CancellationTokenSource();
 
-                // Observable emitujące co 16ms (60 FPS)
                 _updateSubscription = Observable
                     .Interval(TimeSpan.FromMilliseconds(16))
                     .TakeUntil(_updateSubject)
                     .Subscribe(_ => UpdateBallMove());
 
-                // Uruchamianie logiki gry bez timera
-                StartGameLogicWithoutTimer();
+                StartGameLogic();
 
-                OnPropertyChanged(nameof(CanvasContent)); // odświeżenie widoku
+                OnPropertyChanged(nameof(CanvasContent));
             }
             else
             {
@@ -104,26 +94,21 @@ namespace ModelView
             }
         }
 
-        private void StartGameLogicWithoutTimer()
+        private void StartGameLogic()
         {
-            // Uruchamiamy logikę w osobnym tasku
             Task.Run(async () =>
             {
                 try
                 {
                     while (!_cancellationTokenSource.Token.IsCancellationRequested)
                     {
-                        if (gameLogicAPI != null)
-                        {
-                            // Wywołujemy Move bezpośrednio zamiast czekać na timer
-                            gameLogicAPI.Move(null, null);
-                        }
-                        await Task.Delay(16, _cancellationTokenSource.Token); // 60 FPS
+                        gameLogicAPI?.Move(null, null);
+                        await Task.Delay(16, _cancellationTokenSource.Token);
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    // Expected when cancellation is requested
+                    // Expected on cancellation
                 }
             }, _cancellationTokenSource.Token);
         }
@@ -132,25 +117,15 @@ namespace ModelView
         {
             if (_isDisposed) return;
 
-            // Zatrzymujemy Observable
             _updateSubscription?.Dispose();
             _updateSubject?.OnNext(Unit.Default);
 
-            // Anulujemy wszystkie asynchroniczne operacje
             _cancellationTokenSource?.Cancel();
-
-            // Give a moment for tasks to complete
             Thread.Sleep(50);
-
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = null;
 
-            if (gameLogicAPI != null)
-            {
-                // Już nie ma timera do zatrzymania
-                gameLogicAPI = null;
-            }
-
+            gameLogicAPI = null;
             _updateSubscription = null;
         }
 
@@ -183,7 +158,6 @@ namespace ModelView
 
             try
             {
-                // Check if Dispatcher is not null and not shut down
                 if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.HasShutdownStarted)
                 {
                     Application.Current.Dispatcher.Invoke(() =>
@@ -206,45 +180,28 @@ namespace ModelView
             }
             catch (Exception ex)
             {
-                // Log or handle the exception if needed
                 System.Diagnostics.Debug.WriteLine($"Error in UpdateBallMove: {ex.Message}");
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+            if (_isDisposed) return;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
+            if (Application.Current != null)
             {
-                if (disposing)
-                {
-                    // Unsubscribe event handlers to prevent memory leaks
-                    if (Application.Current != null)
-                    {
-                        Application.Current.Exit -= OnApplicationExit;
-                    }
-
-                    if (Application.Current?.MainWindow != null)
-                    {
-                        Application.Current.MainWindow.Closing -= OnWindowClosing;
-                    }
-
-                    Cleanup();
-                    _updateSubject?.Dispose();
-                }
-
-                _isDisposed = true;
+                Application.Current.Exit -= OnApplicationExit;
             }
-        }
 
-        ~MainViewModel()
-        {
-            Dispose(false);
+            if (Application.Current?.MainWindow != null)
+            {
+                Application.Current.MainWindow.Closing -= OnWindowClosing;
+            }
+
+            Cleanup();
+            _updateSubject?.Dispose();
+
+            _isDisposed = true;
         }
     }
 }
