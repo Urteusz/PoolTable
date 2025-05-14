@@ -1,93 +1,119 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using Data;
 
-namespace Data
+namespace DataTests
 {
-    public class Ball : IBall
+    [TestClass]
+    public class BallTests
     {
-        // Właściwości z interfejsu IBall
-        public Guid Id_ball { get; private set; }
-        private float _x, _y, _r, _vx, _vy;
-        private string _color;
-
-        public float x
+        [TestMethod]
+        public void Constructor_ShouldInitializePropertiesCorrectly()
         {
-            get => _x;
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException(nameof(x), "X cannot be negative.");
-                _x = value;
-            }
+            // Arrange
+            float x = 10, y = 20, r = 5, vx = 1, vy = 2;
+
+            // Act
+            Ball ball = new Ball(x, y, r, vx, vy);
+
+            // Assert
+            Assert.AreEqual(x, ball.x);
+            Assert.AreEqual(y, ball.y);
+            Assert.AreEqual(r, ball.r);
+            Assert.AreEqual(vx, ball.vx);
+            Assert.AreEqual(vy, ball.vy);
+            Assert.IsNotNull(ball.color);
+            Assert.AreEqual(6, ball.color.Length);
         }
 
-        public float y
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void SettingNegativeX_ShouldThrow()
         {
-            get => _y;
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException(nameof(y), "Y cannot be negative.");
-                _y = value;
-            }
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.x = -1;
         }
 
-        public float vx
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void SettingNegativeY_ShouldThrow()
         {
-            get => _vx;
-            set => _vx = value;
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.y = -10;
         }
 
-        public float vy
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void SettingZeroRadius_ShouldThrow()
         {
-            get => _vy;
-            set => _vy = value;
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.r = 0;
         }
 
-        public string color
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void SettingTooShortColor_ShouldThrow()
         {
-            get => _color;
-            set
-            {
-                if (value.Length != 6) throw new ArgumentException("Color must be exactly 6 characters.");
-                if (!System.Text.RegularExpressions.Regex.IsMatch(value, @"^[A-F0-9]+$"))
-                    throw new ArgumentException("Color must contain valid hexadecimal characters.");
-                _color = value.ToUpper();
-            }
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.color = "12345";
         }
 
-        public float r
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void SettingTooLongColor_ShouldThrow()
         {
-            get => _r;
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException(nameof(r), "Radius cannot be negative.");
-                _r = value;
-            }
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.color = "1234567";
         }
 
-        // Konstruktor
-        public Ball(float x, float y, float r, float vx, float vy)
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void SettingInvalidHexCharacterColor_ShouldThrow()
         {
-            Id_ball = Guid.NewGuid();  // Generowanie unikalnego Id
-            this.x = x;
-            this.y = y;
-            this.r = r;
-            this.vx = vx;
-            this.vy = vy;
-            this.color = "FFFFFF";  // Domyślny kolor (możesz zmienić)
+            Ball ball = new Ball(1, 1, 1, 0, 0);
+            ball.color = "12GHIJ";
         }
 
-        // Metoda do tworzenia piłki (zdefiniowana w interfejsie)
-        public Ball createBall(int x, int y, int r, int vx, int vy)
+        [TestMethod]
+        public void SetPosition_ShouldUpdateCoordinates()
         {
-            return new Ball(x, y, r, vx, vy);
+            Ball ball = new Ball(10, 20, 5, 2, 3);
+            ball.SetPosition();
+
+            Assert.AreEqual(12, ball.x);
+            Assert.AreEqual(23, ball.y);
         }
 
-        global::Ball IBall.createBall(int x, int y, int r, int vx, int vy)
+        [TestMethod]
+        public void LosujKolor_ShouldGenerateValidHexColor()
         {
-            throw new NotImplementedException();
+            Ball ball = new Ball(0, 0, 1, 0, 0);
+            ball.LosujKolor();
+            string color = ball.color;
+
+            StringAssert.Matches(color, new System.Text.RegularExpressions.Regex("^[A-F0-9]{6}$"));
+        }
+
+        [TestMethod]
+        public void CreateBall_ShouldReturnNewBallWithGivenProperties()
+        {
+            Ball original = new Ball(0, 0, 1, 0, 0);
+            Ball created = original.createBall(5, 10, 2, 1, -1);
+
+            Assert.AreEqual(5, created.x);
+            Assert.AreEqual(10, created.y);
+            Assert.AreEqual(2, created.r);
+            Assert.AreEqual(1, created.vx);
+            Assert.AreEqual(-1, created.vy);
+        }
+
+        [TestMethod]
+        public void Id_ShouldBeUnique()
+        {
+            Ball ball1 = new Ball(1, 1, 1, 1, 1);
+            Ball ball2 = new Ball(1, 1, 1, 1, 1);
+
+            Assert.AreNotEqual(ball1.Id_ball, ball2.Id_ball);
         }
     }
 }
