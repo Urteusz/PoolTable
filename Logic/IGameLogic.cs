@@ -15,9 +15,5 @@ namespace Logic
         int getCountBall();
         bool CreateBalls(int count);
 
-        // Usunięto następujące metody związane z timerem:
-        // void StartTimer();
-        // void StopTimer();
-        // Timer getTimer();
     }
 }

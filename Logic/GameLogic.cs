@@ -62,7 +62,8 @@ namespace Logic
                     float y = Random.Shared.Next(0, (int)tableAPI.height);
                     float vx = Random.Shared.Next(-5, 5);
                     float vy = Random.Shared.Next(-5, 5);
-                    IBall ball = new Ball(x, y, 25, vx, vy);
+                    float r = Random.Shared.Next(10, 30);
+                    IBall ball = new Ball(x, y, r, vx, vy);
 
                     lock (_lockObject) // Dodano synchronizację
                     {
