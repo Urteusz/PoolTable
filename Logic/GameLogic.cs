@@ -17,29 +17,24 @@ namespace Logic
 
         public void Move(object sender, EventArgs e)
         {
-            var ballsCopy = new List<IBall>();
             lock (_lockObject) // Dodano synchronizację
             {   
-                foreach (var ball in tableAPI.balls)
+                foreach (var ball in getBalls())
                 {
-                    ballsCopy.Add(ball);
+                    ball.SetPosition();
                 }
-            }
-            foreach (var ball in ballsCopy)
-            {
-                ball.SetPosition();
-            }
 
-            foreach (var ball in ballsCopy)
-            {
-                HandleWallCollision(ball);
-            }
-
-            for (int i = 0; i < ballsCopy.Count; i++)
-            {
-                for (int j = i + 1; j < ballsCopy.Count; j++)
+                foreach (var ball in getBalls())
                 {
-                    ResolveCollision(ballsCopy[i], ballsCopy[j]);
+                    HandleWallCollision(ball);
+                }
+
+                for (int i = 0; i < getBalls().Count; i++)
+                {
+                    for (int j = i + 1; j < getBalls().Count; j++)
+                    {
+                        ResolveCollision(getBalls()[i], getBalls()[j]);
+                    }
                 }
             }
         }
@@ -62,7 +57,7 @@ namespace Logic
                     float y = Random.Shared.Next(0, (int)tableAPI.height);
                     float vx = Random.Shared.Next(-5, 5);
                     float vy = Random.Shared.Next(-5, 5);
-                    float r = Random.Shared.Next(10, 30);
+                    float r = Random.Shared.Next(10, 20);
                     IBall ball = new Ball(x, y, r, vx, vy);
 
                     lock (_lockObject) // Dodano synchronizację
