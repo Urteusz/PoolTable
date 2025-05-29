@@ -8,6 +8,8 @@ using System.Windows;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
+using System.Threading;
+using System.IO;
 
 namespace ModelView
 {
@@ -21,6 +23,8 @@ namespace ModelView
 
         private TableModel tableModel;
         private IGameLogic gameLogicAPI;
+        private ILogger _logger;
+
         private readonly int canvasWidth = 800;
         private readonly int canvasHeight = 600;
         private bool _isDisposed = false;
@@ -68,7 +72,12 @@ namespace ModelView
             {
                 tableModel = new TableModel(canvasWidth, canvasHeight);
                 Table t = new Table(canvasWidth, canvasHeight);
-                gameLogicAPI = new GameLogic(t);
+
+                string logFileName = $"log_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFileName);
+                _logger = new Logger(logPath);
+
+                gameLogicAPI = new GameLogic(t, _logger);
 
                 bool success = CreateBalls(ballCount);
                 if (!success)
@@ -127,6 +136,10 @@ namespace ModelView
 
             gameLogicAPI = null;
             _updateSubscription = null;
+            _logger?.LoggerMessage("DELETE","All balls were decapitated.");
+
+            (_logger as Logger)?.Stop();
+            _logger = null;
         }
 
         public bool CreateBalls(int count)
@@ -186,6 +199,7 @@ namespace ModelView
 
         public void Dispose()
         {
+
             if (_isDisposed) return;
 
             if (Application.Current != null)

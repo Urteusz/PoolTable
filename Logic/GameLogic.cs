@@ -9,10 +9,12 @@ namespace Logic
     {
         private readonly ITable tableAPI;
         private readonly object _lockObject = new object(); // Dodano synchronizację
+        private readonly ILogger _logger;
 
-        public GameLogic(Table t)
+        public GameLogic(Table t, ILogger logger)
         {
             tableAPI = t;
+            _logger = logger;
         }
 
         public void Move(object sender, EventArgs e)
@@ -67,6 +69,7 @@ namespace Logic
                             tableAPI.AddBall(ball);
                             placed = true;
                             createdBalls++;
+                            _logger.LogBallCreate(ball);
                         }
                     }
 
@@ -204,30 +207,46 @@ namespace Logic
             ball2.x -= nx * overlap;
             ball2.y -= ny * overlap;
 
+            _logger.LogBallColision(ball1, ball2);
+
         }
 
         private void HandleWallCollision(IBall ball)
         {
+            string Wall = string.Empty;
             if (ball.x - ball.r < 0 && ball.vx < 0)
             {
                 ball.vx *= -1;
                 ball.x = ball.r;
+                Wall = "LEFT";
             }
             else if (ball.x + ball.r > tableAPI.width && ball.vx > 0)
             {
                 ball.vx *= -1;
                 ball.x = tableAPI.width - ball.r;
+                Wall = "RIGHT";
             }
 
+            if (!string.IsNullOrEmpty(Wall))
+            {
+                _logger.LogBallColisionWall(ball, Wall);
+            }
+            Wall = string.Empty;
             if (ball.y - ball.r < 0 && ball.vy < 0)
             {
                 ball.vy *= -1;
                 ball.y = ball.r;
+                Wall = "TOP";
             }
             else if (ball.y + ball.r > tableAPI.height && ball.vy > 0)
             {
                 ball.vy *= -1;
                 ball.y = tableAPI.height - ball.r;
+                Wall = "BOTTOM";
+            }
+            if (!string.IsNullOrEmpty(Wall))
+            {
+                _logger.LogBallColisionWall(ball, Wall);
             }
         }
     }

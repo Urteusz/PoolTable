@@ -1,15 +1,18 @@
 ﻿using Data;
+using System;
 using System.Numerics;
 
 public class Ball : IBall
 {
-    private readonly Guid id = Guid.NewGuid(); // Fixed placement of 'readonly' modifier  
+    private readonly Guid id;
     private string _color;
     private float _x, _y, _r;
     private float _vx, _vy;
 
+    // Domyślny konstruktor generuje nowe GUID
     public Ball(float x, float y, float r, float vx, float vy)
     {
+        id = Guid.NewGuid();
         LosujKolor();
         this.x = x;
         this.y = y;
@@ -18,20 +21,28 @@ public class Ball : IBall
         this.vy = vy;
     }
 
-    public Guid Id_ball
+    // 🔧 Nowy konstruktor z ID jako int
+    public Ball(int idInt, float x, float y, float r, float vx, float vy)
     {
-        get { return id; }
+        id = CreateGuidFromInt(idInt);
+        LosujKolor();
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.vx = vx;
+        this.vy = vy;
     }
+
+    public Guid Id_ball => id;
 
     public Ball createBall(int x, int y, int r, int vx, int vy)
     {
-        Ball b = new Ball(x, y, r, vx, vy);
-        return b;
+        return new Ball(x, y, r, vx, vy);
     }
 
     public string color
     {
-        get { return _color; }
+        get => _color;
         set
         {
             if (value == null || value.Length != 6)
@@ -47,60 +58,42 @@ public class Ball : IBall
 
     public float x
     {
-        get { return _x; }
+        get => _x;
         set
         {
-            if (value >= 0)
-            {
-                _x = value;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("x", "Współrzędna x nie może być ujemna");
-            }
+            if (value >= 0) _x = value;
+            else throw new ArgumentOutOfRangeException("x", "Współrzędna x nie może być ujemna");
         }
     }
 
     public float y
     {
-        get { return _y; }
+        get => _y;
         set
         {
-            if (value >= 0)
-            {
-                _y = value;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("y", "Współrzędna y nie może być ujemna");
-            }
+            if (value >= 0) _y = value;
+            else throw new ArgumentOutOfRangeException("y", "Współrzędna y nie może być ujemna");
         }
-    }
-
-    public void SetPosition()
-    {
-        this.x = this.x + this.vx;
-        this.y = this.y + this.vy;
     }
 
     public float r
     {
-        get { return _r; }
+        get => _r;
         set
         {
-            if (value > 0)
-            {
-                _r = value;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("r", "Współrzędna r nie może być ujemna");
-            }
+            if (value > 0) _r = value;
+            else throw new ArgumentOutOfRangeException("r", "Promień musi być większy od zera");
         }
     }
 
-    public float vx { get { return _vx; } set { _vx = value; } }
-    public float vy { get { return _vy; } set { _vy = value; } }
+    public float vx { get => _vx; set => _vx = value; }
+    public float vy { get => _vy; set => _vy = value; }
+
+    public void SetPosition()
+    {
+        x += vx;
+        y += vy;
+    }
 
     public void LosujKolor()
     {
@@ -111,6 +104,14 @@ public class Ball : IBall
         {
             znakiHex[i] = dozwoloneZnaki[_random.Next(dozwoloneZnaki.Length)];
         }
-        this.color = new string(znakiHex);
+        color = new string(znakiHex);
+    }
+
+    // 🧠 Tworzy Guid z int-a – np. na potrzeby testów
+    private Guid CreateGuidFromInt(int value)
+    {
+        byte[] bytes = new byte[16];
+        BitConverter.GetBytes(value).CopyTo(bytes, 0);
+        return new Guid(bytes);
     }
 }

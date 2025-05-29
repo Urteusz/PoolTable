@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Data;
 using Logic;
+using Moq;
 
 namespace LogicTests
 {
@@ -12,12 +13,14 @@ namespace LogicTests
     {
         private GameLogic logic;
         private Table table;
+        private Mock<ILogger> mockLogger;
 
         [TestInitialize]
         public void Setup()
         {
             table = new Table(500, 500);
-            logic = new GameLogic(table);
+            mockLogger = new Mock<ILogger>();
+            logic = new GameLogic(table, mockLogger.Object);
         }
 
         [TestMethod]
@@ -27,6 +30,7 @@ namespace LogicTests
 
             Assert.IsTrue(result);
             Assert.AreEqual(5, logic.getCountBall());
+            mockLogger.Verify(l => l.LogBallCreate(It.IsAny<IBall>()), Times.Exactly(5));
         }
 
         [TestMethod]
@@ -53,7 +57,7 @@ namespace LogicTests
         public void AddBallCheck_ShouldReturnFalse_WhenBallCollides()
         {
             IBall b1 = new Ball(100, 100, 25, 0, 0);
-            IBall b2 = new Ball(110, 100, 25, 0, 0); // Zderza się z b1
+            IBall b2 = new Ball(110, 100, 25, 0, 0);
 
             logic.AddBallCheck(b1);
             bool result = logic.AddBallCheck(b2);
@@ -104,15 +108,18 @@ namespace LogicTests
         [TestMethod]
         public void Move_ShouldBounceBallFromWall()
         {
-            IBall ball = new Ball(10, 10, 10, -5, -5); // Powinien się odbić od lewej/górnej krawędzi
+            IBall ball = new Ball(10, 10, 10, -5, -5); // zderzenie z lewą/górną
             logic.AddBallCheck(ball);
 
             logic.Move(null, EventArgs.Empty);
 
-            Assert.AreEqual(10, ball.x); // zostaje na granicy
+            Assert.AreEqual(10, ball.x);
             Assert.AreEqual(10, ball.y);
-            Assert.AreEqual(5, ball.vx); // odbicie
+            Assert.AreEqual(5, ball.vx);
             Assert.AreEqual(5, ball.vy);
+
+            mockLogger.Verify(l => l.LogBallColisionWall(ball, "Left"), Times.Once());
+            mockLogger.Verify(l => l.LogBallColisionWall(ball, "Top"), Times.Once());
         }
 
         [TestMethod]
@@ -145,5 +152,20 @@ namespace LogicTests
             var result = logic.getTable();
             Assert.AreSame(table, result);
         }
+
+        [TestMethod]
+        public void Move_ShouldLogCollision_WhenBallsCollide()
+        {
+            IBall ball1 = new Ball(100, 100, 20, 5, 0);  
+            IBall ball2 = new Ball(160, 100, 20, -5, 0); 
+            logic.AddBallCheck(ball1);
+            logic.AddBallCheck(ball2);
+
+            for (int i = 0; i < 10; i++)
+                logic.Move(null, EventArgs.Empty);
+
+            mockLogger.Verify(l => l.LogBallColision(It.IsAny<IBall>(), It.IsAny<IBall>()), Times.AtLeastOnce());
+        }
+
     }
 }
